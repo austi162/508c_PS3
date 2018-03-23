@@ -44,7 +44,12 @@ label variable badhealth "Poor or fair health"
 label define healthunit 1 "Poor or fair health" 0 "Good, very good or excellent health"
 label value badhealth healthunit
 
-*most people are healthy, white, female, and around age 50.
+/*Most people are healthy, white, female, and around age 50.N on-hispanic blacks
+and hispanics have a higher percentage of the sample who identify as fair or
+poor health (20.75% and 14.34% respectively) compared to only 8.43% of
+whites. Interestingly, blacks and whites had similar proportions who died within
+5 years of the survey (about 8.4% and 8.5% respectively). 
+*/
 
 pause
 
@@ -57,10 +62,12 @@ pause
 //Describe any notable differences between the graphs.
 
 graph twoway lfit mort5 age if sex == 1 || ///
-lfit mort5 age if sex == 2, legend(label(1 "Male") label(2 "Female")) ytitle(Died within 5 years of the survey)
+	lfit mort5 age if sex == 2, 	legend(label(1 "Male") label(2 "Female")) /// 
+	ytitle(Died within 5 years of the survey)
 
 graph twoway lfit badhealth age if sex == 1 || ///
-lfit badhealth age if sex == 2, legend(label(1 "Male") label(2 "Female")) ytitle(Self-identified as poor or fair health)
+	lfit badhealth age if sex == 2, legend(label(1 "Male") label(2 "Female")) ///
+	ytitle(Self-identified as poor or fair health)
 
 pause
 
@@ -71,9 +78,10 @@ pause
 // variables and health. (You need not disaggregate by sex, but you may if you
 // so desire.)
 
-//First, graph rates of mortality and fair/poor health by the level of family income
+//First, graph rates of mortality and fair/poor health by the level of family 
+//income
 
-*create last income bin
+*create remaining income bin
 gen faminc_lt20 = faminc_20t75 == 0 & faminc_gt75 == 0
 replace faminc_lt20 = . if faminc_20t75 == . & faminc_gt75 == .
 
@@ -84,7 +92,8 @@ replace faminc_cat = 3 if faminc_gt75 == 1
 replace faminc_cat = . if faminc_lt20 == . & faminc_20t75 == . & faminc_gt75 == .
 
 label variable faminc_lt20 "Family income < 20k"
-label define inclevels 1 "Family income < 25k" 2 "Family income 20-75k" 3 "Family income > 75k" 
+label define inclevels 1 "Family income < 25k" 2 "Family income 20-75k" /// 
+	3 "Family income > 75k" 
 label value faminc_cat inclevels
 label variable faminc_cat "Family income levels"
 
@@ -100,7 +109,8 @@ graph bar badhealth mort5, by(faminc_cat) legend(label(1 "Poor or fair health") 
 recode edyrs (1/11=1) (12=2) (13/15=3) (16=4) (17/19=5), gen(edyrs_cat)
 	
 label variable edyrs_cat "Education level"
-label define edlevels 1 "Less than HS completion" 2 "HS completion" 3 "Some college" 4 "College completion" 5 "Post-graduate study"
+label define edlevels 1 "Less than HS completion" 2 "HS completion" ///
+	3 "Some college" 4 "College completion" 5 "Post-graduate study"
 label value edyrs_cat edlevels
 
 *Graph badhealth and mort5 by education categories
@@ -211,13 +221,16 @@ foreach var in age edyrs_cat faminc_cat race_cat {
 probit mort5 age edyrs_cat faminc_cat race_cat, r
 
 *For average person
-di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + _b[faminc_cat]*faminc_cat_mean +_b[race_cat]*race_cat_mean + _b[_cons])
+di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + ///
+	_b[faminc_cat]*faminc_cat_mean +_b[race_cat]*race_cat_mean + _b[_cons])
 
 *Relative risk for high-income African-Americans = 2.6%
-di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + _b[faminc_cat]*3 +_b[race_cat]*1 + _b[_cons])
+di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + ///
+	_b[faminc_cat]*3 +_b[race_cat]*1 + _b[_cons])
 
 *Relative risk for low-income whites = 5.1% / nearly 2x more likely than high-income blacks
-di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + _b[faminc_cat]*1 +_b[race_cat]*3 + _b[_cons])
+di normprob(_b[age]*age_mean + _b[edyrs_cat]*edyrs_cat_mean + ///
+	_b[faminc_cat]*1 +_b[race_cat]*3 + _b[_cons])
 
 restore
 
@@ -225,7 +238,7 @@ restore
 //differences between high-income African-Americans and low-income whites? If 
 //not, how would you alter it?
 
-*?
+*See submitted writeup.
 
 pause
 
@@ -235,7 +248,7 @@ pause
 //Should we think of the coefficients (or marginal effects) on family income as
 //causal? Why or why not?
 
-*No?
+*See submitted writeup.
 
 ********************************************************************************
 **                                   P7                                       **
@@ -248,23 +261,25 @@ pause
 
 local socioeconomic_controls edyrs race_cat
 
-*Step 1. Check correlation between income bins and health behaviors to determine if we're encountering OVB
+*Step 1. Check correlation between income bins and health behaviors to determine 
+*if we're encountering OVB.
 corr faminc_lt20 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
 
 corr faminc_20t75 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
 
 corr faminc_gt75 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon 
 
-*Step 2. Check significance of IV on DV without mediating variable. Testing whether Uninsured is mediator. 
+*Step 2. Check significance of IV on DV without mediating variable. Testing 
+*whether Uninsured is mediator. 
 logistic badhealth faminc_lt20 faminc_20t75 `socioeconomic_controls'
 logistic mort5 faminc_lt20 faminc_20t75 `socioeconomic_controls'
 
-*Step 3. Check significance of IV and Mediator after including Mediator in reg
+*Step 3. Check significance of IV and Mediator after including Mediator in reg.
 logistic badhealth faminc_lt20 faminc_20t75 uninsured `socioeconomic_controls'
 logistic mort5 faminc_lt20 faminc_20t75 uninsured `socioeconomic_controls'
 
 *Step 4. Compare indirect and direct mediation levels
-** uninsured had the highest degree of correlation and therefore the greatest
+** Uninsured had the highest degree of correlation and therefore the greatest
 ** liklihood of acting as a mediating variable. Yet adding uninsured only
 **increased the odds of poor folks being diagnosed with "poor or fair" health 
 **9.3x to 10.3x. Similarly, adding uninsured increased the odds of poorer folks 
@@ -297,13 +312,14 @@ predict p_hat_1, outcome(1)
 *graph the results
 sort health
 twoway (connect p_hat_1 health), ///
-       legend(label(1 "Died within 5 yrs")) ytitle(Predicted probability) title(Predicted probability of dying within 5 years)
+       legend(label(1 "Died within 5 yrs")) ytitle(Predicted mortality probability) ///
+	   title(Predicted probability of dying within 5 years)
 
 restore
 
-*The sicker you identify, the more likely you would die within 5 years of the survey.
-*The relationship increases exponentially, so the "fair or poor" grouping increases
-*at a higher rate than "excellent to good" grouping.
+*The sicker you identify, the more likely you will die within 5 years of the 
+*survey. The relationship increases exponentially, so the "fair or poor" grouping 
+*increases at a higher rate than "excellent to good" grouping.
 
 pause
 
@@ -315,25 +331,28 @@ pause
 //the results based on the binary health status variable? Which set of results 
 //in question (4) provides coefficients on a comparable scale?
 
-oprobit health faminc_lt20 faminc_20t75 edyrs black hisp other
+local healthcontrols uninsured hypertenev diabeticev alc5upyr smokev vig10fwk
+
+oprobit health faminc_lt20 faminc_20t75 edyrs black hisp other `healthcontrols'
 mfx compute 
 
-probit badhealth faminc_lt20 faminc_20t75 edyrs black hisp other 
+probit badhealth faminc_lt20 faminc_20t75 edyrs black hisp other `healthcontrols'
 mfx compute
 
-*binary probit overestimated the liklihood 
+*Moving from high to low income in the ordered probit resulted in a decrease in
+*the liklihood that you will identify as excellent health.
 
 pause
 
 ********************************************************************************
-**                                   P10                                       **
+**                                   P10                                      **
 ********************************************************************************
 //Use your estimates from question (9) to generate predicted probabilities of
 //being in each health status categories. Plot the distribution of predicted 
 //probabilities for whites and for blacks. How do these distributions differ? 
 
 **Graph for black == 1
-oprobit health faminc_cat edyrs uninsured if black == 1
+oprobit health faminc_cat edyrs `healthcontrols' if black == 1
 
 *Generate predictions by self-reported health status, setting all the other
 *covariates equal to their means:
@@ -342,7 +361,7 @@ foreach var in edyrs uninsured {
   replace `var' = r(mean)
   }
 
-*Generate predicted probability, by health status
+*Generate predicted probability of health status, by income category
 predict b_hat_1, outcome(1)
 predict b_hat_2, outcome(2)
 predict b_hat_3, outcome(3)
@@ -351,12 +370,14 @@ predict b_hat_5, outcome(5)
 
 *graph the results
 sort faminc_cat
-twoway (connect b_hat_1 faminc_cat)(connect b_hat_2 faminc_cat)(connect b_hat_3 faminc_cat)(connect b_hat_4 faminc_cat)(connect b_hat_5 faminc_cat), ///
-	legend(label(1 "Excellent") label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
-	ytitle(Predicted probability) title(Predicted probability of health status) subtitle(black == 1)
+twoway (connect b_hat_1 faminc_cat)(connect b_hat_2 faminc_cat)(connect b_hat_3 faminc_cat) ///
+	(connect b_hat_4 faminc_cat)(connect b_hat_5 faminc_cat), legend(label(1 "Excellent") ///
+	label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
+	ytitle(Predicted probability) title(Predicted probability of health status) ///
+	subtitle(black == 1)
 
 **run again for white == 1
-oprobit health faminc_cat edyrs uninsured if white == 1
+oprobit health faminc_cat edyrs `healthcontrols' if white == 1
 
 *Generate predictions by self-reported health status, setting all the other
 *covariates equal to their means:
@@ -365,7 +386,7 @@ foreach var in edyrs uninsured {
   replace `var' = r(mean)
   }
 
-*Generate predicted probability, by health status
+*Generate predicted probability of health status, by income category
 predict w_hat_1, outcome(1)
 predict w_hat_2, outcome(2)
 predict w_hat_3, outcome(3)
@@ -373,19 +394,30 @@ predict w_hat_4, outcome(4)
 predict w_hat_5, outcome(5)
 
 *graph the results
-twoway (connect w_hat_1 faminc_cat)(connect w_hat_2 faminc_cat)(connect w_hat_3 faminc_cat)(connect w_hat_4 faminc_cat)(connect w_hat_5 faminc_cat), ///
-       legend(label(1 "Excellent") label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
-	   ytitle(Predicted probability) title(Predicted probability of health status) subtitle(white == 1)
+twoway (connect w_hat_1 faminc_cat)(connect w_hat_2 faminc_cat)(connect w_hat_3 faminc_cat) ///
+	(connect w_hat_4 faminc_cat)(connect w_hat_5 faminc_cat), legend(label(1 "Excellent") ///
+	label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
+	ytitle(Predicted probability) title(Predicted probability of health status) ///
+	subtitle(white == 1)
 
-*generate differences in predicted probability between races, by health status
+*generate differences in predicted probability of health status between races, 
+*by income category
 forv i = 1/5 {
 	gen diff_hat_`i' = w_hat_`i' - b_hat_`i'  
 	}
 	   
 //How do they compare with the unadjusted histogram of self-reported health 
 //status for blacks and whites?
-twoway (connect diff_hat_1 faminc_cat)(connect diff_hat_2 faminc_cat)(connect diff_hat_3 faminc_cat)(connect diff_hat_4 faminc_cat)(connect diff_hat_5 faminc_cat), ///
-       legend(label(1 "Excellent") label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
-	   ytitle(Predicted Probability Differences) title(Differences in predicted health status) subtitle(between whites and blacks)
+sort faminc_cat
+twoway (connect diff_hat_1 faminc_cat)(connect diff_hat_2 faminc_cat) ///
+	(connect diff_hat_3 faminc_cat)(connect diff_hat_4 faminc_cat)(connect diff_hat_5 faminc_cat), ///
+	legend(label(1 "Excellent") label(2 "Very good") label(3 "Good") ///
+	label(4 "Fair") label(5 "Poor")) ytitle(Predicted Probability Differences) ///
+	title(Differences in predicted health status) subtitle(between whites and blacks)
 
-graph bar badhealth mort5, by(race_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
+*In general, differences show that whites are more likely to be in very good or
+*excellent health compared to blacks. Blacks are more likely to report poor,
+*fair or good health compared to whites across all income categories.
+	
+graph bar badhealth mort5, by(race_cat) legend(label(1 "Poor or fair health") ///
+	label(2 "Died within 5 years of survey"))
