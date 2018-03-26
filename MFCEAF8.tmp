@@ -156,32 +156,32 @@ pause
 *as a continuous variable.
 
 local controls age edyrs_cat faminc_cat race_cat
- 
+
 reg mort5 age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Mortality LPM) addtext(LPM,X)replace label
+outreg2 using PS3_Outreg.xls, ctitle(Mortality LPM) addtext(LPM,X)replace label
 predict p_ols
 
 probit mort5 age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Mortality Probit) addtext(Probit,X)append label
+outreg2 using PS3_Outreg.xls, ctitle(Mortality Probit) addtext(Probit,X)append label
 predict p_probit
 
 logit mort5 age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Mortality Logit) addtext(Logit,X)append label
+outreg2 using PS3_Outreg.xls, ctitle(Mortality Logit) addtext(Logit,X)append label
 predict p_logit
 
 sum p_*
 corr p_*
 
 reg badhealth age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Health Status LPM) addtext(LPM,X)append label
+outreg2 using PS3_Outreg.xls, ctitle(Health Status LPM) addtext(LPM,X)append label
 predict b_ols
 
 probit badhealth age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Health Status Probit) addtext(Probit,X)append label
+outreg2 using PS3_Outreg.xls, ctitle(Health Status Probit) addtext(Probit,X)append label
 predict b_probit
 
 logit badhealth age edyrs_cat faminc_cat race_cat, r
-outreg2 using PS3_Q4a_Outreg.xls, ctitle(Health Status Logit) addtext(Logit,X)append label
+outreg2 using PS3_Outreg.xls, ctitle(Health Status Logit) addtext(Logit,X)append label
 predict b_logit
 
 sum b_*
@@ -192,25 +192,21 @@ corr b_*
 //unexpected patterns. Are the LP, probit, and logit results similar?
 
 probit mort5 age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
-outreg2 using PS3_Q4b_Outreg.xls, ctitle(Mortality Probit MFX) addtext(Probit,X)replace label
 mfx compute
 
 pause
 
 logit mort5 age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
-outreg2 using PS3_Q4b_Outreg.xls, ctitle(Mortality Logit MFX) addtext(Logit,X)append label
 mfx compute
 
 pause
 
 probit badhealth age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
-outreg2 using PS3_Q4b_Outreg.xls, ctitle(Health Status Probit MFX) addtext(Probit,X)append label
 mfx compute 
 
 pause
 
 logit mort5 age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
-outreg2 using PS3_Q4b_Outreg.xls, ctitle(Health Status Logit MFX) addtext(Logit,X)append label
 mfx compute
 
 pause
