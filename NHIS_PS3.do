@@ -6,12 +6,12 @@
 
 /* Credit: Somya Bajaj, Joelle Gamble, Anastasia Korolkova, Luke Strathmann, Chris Austin
 Last modified by: Chris Austin
-Last modified on: 3/21/18 */
+Last modified on: 3/26/18 */
 
 clear all
 
 *Set directory, dta file, etc.
-*cd "C:\Users\TerryMoon\Dropbox\Teac=hing Princeton\wws508c 2018S\ps\ps2"
+*cd "C:\Users\TerryMoon\Dropbox\Teac=hing Princeton\wws508c 2018S\ps\ps3"
 cd "C:\Users\Chris\Documents\Princeton\WWS Spring 2018\WWS 508c\PS3\DTA"
 use nhis2000
 
