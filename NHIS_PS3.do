@@ -98,7 +98,7 @@ label value faminc_cat inclevels
 label variable faminc_cat "Family income levels"
 
 *Graph differences by income category
-graph bar badhealth mort5, by(faminc_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
+graph bar badhealth mort5, over(faminc_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
 
 //Second, graph rates of mortality and fair/poor health by education level, with 
 //five categories of educational attainment: less than high school completion (<12),
@@ -109,12 +109,12 @@ graph bar badhealth mort5, by(faminc_cat) legend(label(1 "Poor or fair health") 
 recode edyrs (1/11=1) (12=2) (13/15=3) (16=4) (17/19=5), gen(edyrs_cat)
 	
 label variable edyrs_cat "Education level"
-label define edlevels 1 "Less than HS completion" 2 "HS completion" ///
-	3 "Some college" 4 "College completion" 5 "Post-graduate study"
+label define edlevels 1 "Less than HS" 2 "HS" ///
+	3 "Some college" 4 "College" 5 "Post-grad"
 label value edyrs_cat edlevels
 
 *Graph badhealth and mort5 by education categories
-graph bar badhealth mort5, by(edyrs_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
+graph bar badhealth mort5, over(edyrs_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
 
 //Third, graph rates of mortality and fair/poor health by race/ethnicity. Focus 
 //only on non-Hispanic whites, non-Hispanic blacks, and Hispanics.
@@ -132,7 +132,7 @@ label define race 1 "Black" 2 "Hispanic" 3 "White" 0 "Other"
 label value race_cat race
 
 *Graph badhealth and mort5 by race categories.
-graph bar badhealth mort5, by(race_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
+graph bar badhealth mort5, over(race_cat) legend(label(1 "Poor or fair health") label(2 "Died within 5 years of survey"))
 
 pause
 
