@@ -23,6 +23,7 @@ log using PS2.log, replace
 
 *Download outreg2
 ssc install outreg2
+ssc install mdesc
 
 ********************************************************************************
 **                                   P1                                       **
@@ -33,6 +34,8 @@ gen badhealth = health == 4 | health == 5
 replace badhealth = . if health == .
 
 //Summarize the data
+mdesc
+
 su age sex marstat white black hisp other health badhealth
 
 foreach var in white black hisp other {
@@ -209,7 +212,7 @@ mfx compute
 
 pause
 
-logit mort5 age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
+logit badhealth age edyrs_cat faminc_lt20 faminc_20t75 white hisp other, r
 outreg2 using PS3_Q4b_Outreg.xls, ctitle(Health Status Logit MFX) addtext(Logit,X)append label
 mfx compute
 
@@ -269,15 +272,17 @@ pause
 //role of these mediating variables. Make sure you are able to interpret the 
 //coefficients of the technique you use.
 
+recode uninsured (2=0), gen(uninsured_new)
+
 local socioeconomic_controls edyrs race_cat
 
 *Step 1. Check correlation between income bins and health behaviors to determine 
 *if we're encountering OVB.
-corr faminc_lt20 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
+corr faminc_lt20 bmi uninsured_new cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
 
-corr faminc_20t75 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
+corr faminc_20t75 bmi uninsured_new cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon
 
-corr faminc_gt75 bmi uninsured cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon 
+corr faminc_gt75 bmi uninsured_new cancerev cheartdiev heartattev hypertenev diabeticev alc5upyr smokev vig10fwk bacon 
 
 *Step 2. Check significance of IV on DV without mediating variable. Testing 
 *whether Uninsured is mediator. 
@@ -285,14 +290,14 @@ logistic badhealth faminc_lt20 faminc_20t75 `socioeconomic_controls'
 logistic mort5 faminc_lt20 faminc_20t75 `socioeconomic_controls'
 
 *Step 3. Check significance of IV and Mediator after including Mediator in reg.
-logistic badhealth faminc_lt20 faminc_20t75 uninsured `socioeconomic_controls'
-logistic mort5 faminc_lt20 faminc_20t75 uninsured `socioeconomic_controls'
+logistic badhealth faminc_lt20 faminc_20t75 uninsured_new `socioeconomic_controls'
+logistic mort5 faminc_lt20 faminc_20t75 uninsured_new `socioeconomic_controls'
 
 *Step 4. Compare indirect and direct mediation levels
 ** Uninsured had the highest degree of correlation and therefore the greatest
-** liklihood of acting as a mediating variable. Yet adding uninsured only
-**increased the odds of poor folks being diagnosed with "poor or fair" health 
-**9.3x to 10.3x. Similarly, adding uninsured increased the odds of poorer folks 
+** liklihood of acting as a mediating variable. Being uninsured increased the
+** the odds of poor folks being diagnosed with "poor or fair" health 
+**9.3x to 10.3x. Similarly, being uninsured increased the odds of poorer folks 
 **from dying within 5 years of the survey from 6.2x to 7.8x.
 
 pause 
@@ -350,7 +355,7 @@ probit badhealth faminc_lt20 faminc_20t75 edyrs black hisp other `healthcontrols
 mfx compute
 
 *Moving from high to low income in the ordered probit resulted in a decrease in
-*the liklihood that you will identify as excellent health.
+*the likelihood that you will identify as excellent health.
 
 pause
 
@@ -360,6 +365,8 @@ pause
 //Use your estimates from question (9) to generate predicted probabilities of
 //being in each health status categories. Plot the distribution of predicted 
 //probabilities for whites and for blacks. How do these distributions differ? 
+
+preserve 
 
 **Graph for black == 1
 oprobit health faminc_cat edyrs `healthcontrols' if black == 1
@@ -380,12 +387,15 @@ predict b_hat_5, outcome(5)
 
 *graph the results
 sort faminc_cat
+
 twoway (connect b_hat_1 faminc_cat)(connect b_hat_2 faminc_cat)(connect b_hat_3 faminc_cat) ///
 	(connect b_hat_4 faminc_cat)(connect b_hat_5 faminc_cat), legend(label(1 "Excellent") ///
 	label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
 	ytitle(Predicted probability) title(Predicted probability of health status) ///
 	subtitle(black == 1)
 
+pause	
+	
 **run again for white == 1
 oprobit health faminc_cat edyrs `healthcontrols' if white == 1
 
@@ -404,11 +414,15 @@ predict w_hat_4, outcome(4)
 predict w_hat_5, outcome(5)
 
 *graph the results
+sort faminc_cat
+
 twoway (connect w_hat_1 faminc_cat)(connect w_hat_2 faminc_cat)(connect w_hat_3 faminc_cat) ///
 	(connect w_hat_4 faminc_cat)(connect w_hat_5 faminc_cat), legend(label(1 "Excellent") ///
 	label(2 "Very good") label(3 "Good") label(4 "Fair") label(5 "Poor")) ///
 	ytitle(Predicted probability) title(Predicted probability of health status) ///
 	subtitle(white == 1)
+	
+pause
 
 *generate differences in predicted probability of health status between races, 
 *by income category
@@ -419,15 +433,18 @@ forv i = 1/5 {
 //How do they compare with the unadjusted histogram of self-reported health 
 //status for blacks and whites?
 sort faminc_cat
+
 twoway (connect diff_hat_1 faminc_cat)(connect diff_hat_2 faminc_cat) ///
 	(connect diff_hat_3 faminc_cat)(connect diff_hat_4 faminc_cat)(connect diff_hat_5 faminc_cat), ///
 	legend(label(1 "Excellent") label(2 "Very good") label(3 "Good") ///
 	label(4 "Fair") label(5 "Poor")) ytitle(Predicted Probability Differences) ///
 	title(Differences in predicted health status) subtitle(between whites and blacks)
+	
+pause
 
 *In general, differences show that whites are more likely to be in very good or
 *excellent health compared to blacks. Blacks are more likely to report poor,
 *fair or good health compared to whites across all income categories.
 	
-graph bar badhealth mort5, by(race_cat) legend(label(1 "Poor or fair health") ///
+graph bar badhealth mort5, over(race_cat) legend(label(1 "Poor or fair health") ///
 	label(2 "Died within 5 years of survey"))
