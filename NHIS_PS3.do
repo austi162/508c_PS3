@@ -369,7 +369,7 @@ pause
 preserve 
 
 **Graph for black == 1
-oprobit health faminc_cat edyrs `healthcontrols' if black == 1
+oprobit health faminc_cat edyrs uninsured if black == 1
 
 *Generate predictions by self-reported health status, setting all the other
 *covariates equal to their means:
@@ -397,7 +397,7 @@ twoway (connect b_hat_1 faminc_cat)(connect b_hat_2 faminc_cat)(connect b_hat_3 
 pause	
 	
 **run again for white == 1
-oprobit health faminc_cat edyrs `healthcontrols' if white == 1
+oprobit health faminc_cat edyrs uninsured if white == 1
 
 *Generate predictions by self-reported health status, setting all the other
 *covariates equal to their means:
